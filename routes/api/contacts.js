@@ -88,7 +88,7 @@ router.put("/:contactId", validationUpdateContacts, async (req, res, next) => {
     const id = parseInt(req.params.contactId);
     const body = req.body;
     if (body) {
-      const updatedContact = await model.updateContact((id, body));
+      const updatedContact = await model.updateContact(id, body);
       if (!updatedContact) {
         res.status(404).json({
           status: "error",
@@ -103,9 +103,7 @@ router.put("/:contactId", validationUpdateContacts, async (req, res, next) => {
     return res.status(400).json({
       status: "error",
       code: 400,
-      data: {
-        message: "missing fields",
-      },
+      data: { message: "missing fields" },
     });
   } catch (error) {
     next(error);

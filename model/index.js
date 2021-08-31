@@ -69,7 +69,7 @@ const updateContact = async (contactId, body) => {
     const contacts = await readData();
     const index = contacts.findIndex((contact) => contact.id === contactId);
     if (index === -1) {
-      return null;
+      throw new Error(`Product with id=${contactId} not found`);
     }
     contacts[index] = { ...contacts[index], ...body };
     await fs.writeFile(contactsPath, JSON.stringify(contacts));
