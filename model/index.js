@@ -4,11 +4,6 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const contactsPath = path.join(__dirname, "./contacts.json");
 
-// async function getContacts() {
-//   const allContacts = await fs.readFile(contactsPath);
-//   const contactsFromJson = JSON.parse(allContacts);
-//   return contactsFromJson.toString();
-// }
 const readData = async () => {
   const data = await fs.readFile(contactsPath, "utf8");
   return JSON.parse(data);
@@ -25,7 +20,9 @@ const listContacts = async () => {
 const getContactById = async (contactId) => {
   try {
     const contacts = await readData();
-    const selectContact = contacts.find((contact) => contact.id === contactId);
+    const selectContact = contacts.find(
+      (contact) => String(contact.id) === contactId
+    );
     return selectContact;
   } catch (error) {
     throw error;
@@ -36,12 +33,12 @@ const removeContact = async (contactId) => {
   try {
     const result = await readData();
 
-    const idx = result.findIndex((item) => item.id === contactId);
+    const idx = result.findIndex((item) => String(item.id) === contactId);
     if (idx === -1) {
       return null;
     }
     const contact = result[idx];
-    const contacts = result.filter((item) => item.id !== contactId);
+    const contacts = result.filter((item) => String(item.id) !== contactId);
     const newContacts = JSON.stringify(contacts);
     await fs.writeFile(contactsPath, newContacts);
     return contact;
@@ -67,7 +64,9 @@ const addContact = async (contact) => {
 const updateContact = async (contactId, body) => {
   try {
     const contacts = await readData();
-    const index = contacts.findIndex((contact) => contact.id === contactId);
+    const index = contacts.findIndex(
+      (contact) => String(contact.id) === contactId
+    );
     if (index === -1) {
       throw new Error(`Product with id=${contactId} not found`);
     }

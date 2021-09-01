@@ -23,7 +23,7 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:contactId", async (req, res, next) => {
   try {
-    const contact = await model.getContactById(parseInt(req.params.contactId));
+    const contact = await model.getContactById(req.params.contactId);
     if (contact) {
       return res.status(200).json({
         status: "success",
@@ -68,14 +68,11 @@ router.post("/", validationCreateContacts, async (req, res, next) => {
 
 router.delete("/:contactId", async (req, res, next) => {
   try {
-    // const id = Number(req.params.contactId);
-    const deletedContact = await model.removeContact(
-      parseInt(req.params.contactId)
-    );
+    const deletedContact = await model.removeContact(req.params.contactId);
     if (deletedContact) {
-      res.json(deletedContact);
+      return res.status(200).json(deletedContact);
     }
-    res.status(404).json({
+    return res.status(404).json({
       message: "Not Found",
     });
   } catch (error) {
@@ -85,12 +82,12 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", validationUpdateContacts, async (req, res, next) => {
   try {
-    const id = parseInt(req.params.contactId);
+    const id = req.params.contactId;
     const body = req.body;
     if (body) {
       const updatedContact = await model.updateContact(id, body);
       if (!updatedContact) {
-        res.status(404).json({
+        return res.status(404).json({
           status: "error",
           code: 404,
           data: {
