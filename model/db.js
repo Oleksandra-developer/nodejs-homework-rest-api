@@ -1,4 +1,4 @@
-const mongoose = require("mongooose");
+const mongoose = require("mongoose");
 require("dotenv").config();
 const UrlDb = process.env.DB_HOST;
 const db = mongoose.connect(UrlDb, {
@@ -28,4 +28,4 @@ process.on("SIGINT", async () => {
   });
 });
 
-module.export = db;
+module.exports = db;
