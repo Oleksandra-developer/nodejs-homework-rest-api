@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const guard = require("../../../helpers/guard");
 
 const {
   validationCreateContacts,
@@ -7,21 +8,23 @@ const {
   validationUpdateStatusContact,
   validateMongoId,
 } = require("./validation");
-const controllers = require("../../controllers/contacts");
+const controllers = require("../../../controllers/contacts");
 router
-  .get("/", controllers.getAll)
-  .post("/", validationCreateContacts, controllers.createContact);
+  .get("/", guard, controllers.getAll)
+  .post("/", guard, validationCreateContacts, controllers.createContact);
 router
-  .get("/:contactId", validateMongoId, controllers.getById)
-  .delete("/:contactId", validateMongoId, controllers.deleteContact)
+  .get("/:contactId", guard, validateMongoId, controllers.getById)
+  .delete("/:contactId", guard, validateMongoId, controllers.deleteContact)
   .put(
     "/:contactId",
+    guard,
     validationUpdateContacts,
     validateMongoId,
     controllers.updateContact
   );
 router.patch(
   "/:contactId/favorite",
+  guard,
   validationUpdateStatusContact,
   controllers.updateStatusContact
 );

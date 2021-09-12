@@ -2,7 +2,8 @@ const model = require("../repositories/contacts");
 
 const getAll = async (req, res, next) => {
   try {
-    const contacts = await model.listContacts();
+    const userId = req.body.id;
+    const contacts = await model.listContacts(userId);
     res.json({
       status: "success",
       code: 200,
@@ -17,7 +18,8 @@ const getAll = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    const contact = await model.getContactById(req.params.contactId);
+    const userId = req.body.id;
+    const contact = await model.getContactById(userId, req.params.contactId);
     if (contact) {
       return res.status(200).json({
         status: "success",
@@ -36,6 +38,7 @@ const getById = async (req, res, next) => {
 
 const createContact = async (req, res, next) => {
   try {
+    const userId = req.body.id;
     const { name, email, phone } = req.body;
     if (!name || !email || !phone) {
       return res.json({
@@ -46,7 +49,7 @@ const createContact = async (req, res, next) => {
         },
       });
     } else {
-      const contact = await model.addContact(req.body);
+      const contact = await model.addContact(userId, req.body);
       return res.status(201).json({
         status: "success",
         code: 201,
@@ -62,7 +65,11 @@ const createContact = async (req, res, next) => {
 
 const deleteContact = async (req, res, next) => {
   try {
-    const deletedContact = await model.removeContact(req.params.contactId);
+    const userId = req.body.id;
+    const deletedContact = await model.removeContact(
+      userId,
+      req.params.contactId
+    );
     if (deletedContact) {
       return res.status(200).json(deletedContact);
     }
@@ -76,10 +83,11 @@ const deleteContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   try {
+    const userId = req.body.id;
     const id = req.params.contactId;
     const body = req.body;
     if (body) {
-      const updatedContact = await model.updateContact(id, body);
+      const updatedContact = await model.updateContact(userId, id, body);
       if (!updatedContact) {
         return res.status(404).json({
           status: "error",

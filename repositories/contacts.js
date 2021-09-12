@@ -1,28 +1,34 @@
 const Contact = require("../model/contact");
 
-const listContacts = async () => {
-  const allContacts = await Contact.find();
+const listContacts = async (userId) => {
+  const allContacts = await Contact.find({ owner: userId }).populate({
+    path: "owner",
+    select: " email, subscription, id",
+  });
   return allContacts;
 };
 
-const getContactById = async (contactId) => {
-  const contact = await Contact.findOne({ _id: contactId });
+const getContactById = async (userId, contactId) => {
+  const contact = await Contact.findOne({ _id: contactId, owner: userId });
   return contact;
 };
 
-const removeContact = async (contactId) => {
-  const deletedContact = await Contact.findOneAndRemove({ _id: contactId });
+const removeContact = async (userId, contactId) => {
+  const deletedContact = await Contact.findOneAndRemove({
+    _id: contactId,
+    owner: userId,
+  });
   return deletedContact;
 };
 
-const addContact = async (contact) => {
-  const newContact = await Contact.create(contact);
+const addContact = async (userId, contact) => {
+  const newContact = await Contact.create({ ...contact, owner: userId });
   return newContact;
 };
 
-const updateContact = async (contactId, body) => {
+const updateContact = async (userId, contactId, body) => {
   const updateContact = await Contact.findOneAndUpdate(
-    { _id: contactId },
+    { _id: contactId, owner: userId },
     { ...body },
     { new: true }
   );
