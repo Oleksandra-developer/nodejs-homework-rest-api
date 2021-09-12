@@ -73,19 +73,9 @@ const logout = async (req, res, next) => {
     next(error);
   }
 };
-// /users/current - проверка по токену
+
 const current = async (req, res, next) => {
   try {
-    // const { authorization } = req.headers;
-    // const token = authorization.split(" ")[1];
-    // //   const user = req.body;
-    // if (!token) {
-    //   res.status(HttpCode.UNAUTHORIZED).json({
-    //     message: "Not authorized in controllers",
-    //   });
-    // }
-    // const { _id } = jwt.verify(token, SECRET_KEY);
-    // const user = await Users.findById(_id);
     res.status(HttpCode.OK).json({
       email: req.user.email,
       subscription: req.user.subscription,
@@ -94,20 +84,7 @@ const current = async (req, res, next) => {
     next(error);
   }
 };
-// const token = async (req, res, next) => {
-//   try {
-//     const contacts = await Users.listContacts();
-//     res.json({
-//       status: "success",
-//       code: 200,
-//       data: {
-//         result: contacts,
-//       },
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+
 module.exports = {
   register,
   login,
