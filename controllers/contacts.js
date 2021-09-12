@@ -2,7 +2,8 @@ const model = require("../repositories/contacts");
 
 const getAll = async (req, res, next) => {
   try {
-    const userId = req.body.id;
+    console.log(req.user);
+    const userId = req.user._id;
     const contacts = await model.listContacts(userId);
     res.json({
       status: "success",
@@ -18,7 +19,7 @@ const getAll = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    const userId = req.body.id;
+    const userId = req.user._id;
     const contact = await model.getContactById(userId, req.params.contactId);
     if (contact) {
       return res.status(200).json({
@@ -38,7 +39,7 @@ const getById = async (req, res, next) => {
 
 const createContact = async (req, res, next) => {
   try {
-    const userId = req.body.id;
+    const userId = req.user._id;
     const { name, email, phone } = req.body;
     if (!name || !email || !phone) {
       return res.json({
@@ -65,7 +66,7 @@ const createContact = async (req, res, next) => {
 
 const deleteContact = async (req, res, next) => {
   try {
-    const userId = req.body.id;
+    const userId = req.user._id;
     const deletedContact = await model.removeContact(
       userId,
       req.params.contactId
