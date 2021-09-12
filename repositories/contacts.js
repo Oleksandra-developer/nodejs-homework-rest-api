@@ -3,7 +3,7 @@ const Contact = require("../model/contact");
 const listContacts = async (userId) => {
   const allContacts = await Contact.find({ owner: userId }).populate({
     path: "owner",
-    select: " email, subscription, id",
+    select: " email, subscription",
   });
   return allContacts;
 };
@@ -22,8 +22,12 @@ const removeContact = async (userId, contactId) => {
 };
 
 const addContact = async (userId, contact) => {
-  const newContact = await Contact.create({ ...contact, owner: userId });
-  return newContact;
+  try {
+    const newContact = await Contact.create({ owner: userId, ...contact });
+    return newContact;
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 const updateContact = async (userId, contactId, body) => {

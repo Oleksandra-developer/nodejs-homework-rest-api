@@ -11,15 +11,11 @@ const guard = (req, res, next) => {
     }
     if (error || !user || token !== user.token) {
       res.status(HttpCode.UNAUTHORIZED).json({
-        status: "error",
-        code: HttpCode.UNAUTHORIZED,
-        ResponseBody: {
-          message: "Not authorized",
-        },
+        message: "Not authorized",
       });
     }
     req.user = user;
-    return next();
+    next();
   })(req, res, next);
 };
 module.exports = guard;
