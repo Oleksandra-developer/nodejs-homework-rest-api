@@ -1,10 +1,9 @@
 const Users = require("../repositories/users");
 const { HttpCode } = require("../helpers/constants");
 const jwt = require("jsonwebtoken");
-const UploadAvatarService = require("../services/localUpload");
 const path = require("path");
 const fs = require("fs/promises");
-// const jimp = require("jimp");
+const jimp = require("jimp");
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -92,25 +91,36 @@ const current = async (req, res, next) => {
 };
 
 const newAvatar = async (req, res, next) => {
+  const id = req.user._id.toString();
+  const fileName = req.file.originalname.split(".");
+  const ext = fileName[fileName.length - 1];
+  const publicAvatar = path.join(
+    process.env.AVATARS_FOR_PUBLICATION + id + "." + ext
+  );
+  if (!req.user) {
+    return res.status(HttpCode.UNAUTHORIZED).json({
+      message: "Not authorized",
+    });
+  }
   try {
-    const id = req.user._id;
-    const uploads = new UploadAvatarService(
-      process.env.AVATARS_FOR_PUBLICATION
-    );
-    const avatarUrl = await uploads.saveAvatar({ userId: id, file: req.file });
-    try {
-      await fs.unlink(
-        path.join(process.env.AVATARS_FOR_PUBLICATION, req.user.avatar)
-      );
-    } catch (e) {
-      console.log(e.message);
-    }
-    await Users.updateAvatar(id, avatarUrl);
-    res.status(HttpCode.OK).json({ avatarURL: avatarUrl });
+    const file = await jimp.read(req.file.path);
+    await file
+      .autocrop()
+      .cover(
+        250,
+        250,
+        jimp.HORIZONTAL_ALIGN_CENTER | jimp.VERTICAL_ALIGN_MIDDLE
+      )
+      .writeAsync(publicAvatar);
+    await fs.unlink(req.file.path);
+    return res.status(HttpCode.OK).json({
+      avatarURL: `/avatars/${id}.${ext}`,
+    });
   } catch (error) {
     next(error);
   }
 };
+
 module.exports = {
   register,
   login,
