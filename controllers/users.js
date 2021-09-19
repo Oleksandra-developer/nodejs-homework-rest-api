@@ -1,10 +1,15 @@
 const Users = require("../repositories/users");
 const { HttpCode } = require("../helpers/constants");
 const jwt = require("jsonwebtoken");
+const UploadAvatarService = require("../services/localUpload");
+const path = require("path");
+const fs = require("fs/promises");
+// const jimp = require("jimp");
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
 
 const register = async (req, res, next) => {
+  console.log(req.body, "request");
   try {
     const user = await Users.findByEmail(req.body.email);
     if (user) {
@@ -21,6 +26,7 @@ const register = async (req, res, next) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatar: newUser.avatarURL,
       },
     });
   } catch (error) {
@@ -85,9 +91,30 @@ const current = async (req, res, next) => {
   }
 };
 
+const newAvatar = async (req, res, next) => {
+  try {
+    const id = req.user._id;
+    const uploads = new UploadAvatarService(
+      process.env.AVATARS_FOR_PUBLICATION
+    );
+    const avatarUrl = await uploads.saveAvatar({ userId: id, file: req.file });
+    try {
+      await fs.unlink(
+        path.join(process.env.AVATARS_FOR_PUBLICATION, req.user.avatar)
+      );
+    } catch (e) {
+      console.log(e.message);
+    }
+    await Users.updateAvatar(id, avatarUrl);
+    res.status(HttpCode.OK).json({ avatarURL: avatarUrl });
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   register,
   login,
   logout,
   current,
+  newAvatar,
 };
