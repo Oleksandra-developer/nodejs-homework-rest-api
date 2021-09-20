@@ -1,6 +1,6 @@
 const fs = require("fs/promises");
 
-const isAccessible = (path) => {
+const checkAccess = (path) => {
   return fs
     .access(path)
     .then(() => true)
@@ -8,7 +8,7 @@ const isAccessible = (path) => {
 };
 
 const createFolderIsNotExist = async (folder) => {
-  if (!(await isAccessible(folder))) {
+  if (!(await checkAccess(folder))) {
     await fs.mkdir(folder);
   }
 };

@@ -17,7 +17,6 @@ app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json({ limit: 10000 }));
 
-// eslint-disable-next-line node/no-path-concat
 app.use(express.static(fullPathToImages));
 app.use("/api/contacts", contactsRouter);
 app.use("/api/users", usersRouter);

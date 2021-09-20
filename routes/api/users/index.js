@@ -9,6 +9,6 @@ router.post("/signup", validationUser, ctrl.register);
 router.post("/login", ctrl.login);
 router.post("/logout", guard, ctrl.logout);
 router.get("/current", guard, ctrl.current);
-router.patch("/avatars", guard, upload.single("avatar"), ctrl.newAvatar);
+router.patch("/avatars", guard, upload.single("avatar"), ctrl.updateAvatar);
 
 module.exports = router;

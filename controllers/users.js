@@ -90,7 +90,7 @@ const current = async (req, res, next) => {
   }
 };
 
-const newAvatar = async (req, res, next) => {
+const updateAvatar = async (req, res, next) => {
   const id = req.user._id.toString();
   const fileName = req.file.originalname.split(".");
   const ext = fileName[fileName.length - 1];
@@ -126,5 +126,5 @@ module.exports = {
   login,
   logout,
   current,
-  newAvatar,
+  updateAvatar,
 };
