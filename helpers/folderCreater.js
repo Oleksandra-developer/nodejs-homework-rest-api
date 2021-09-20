@@ -5,7 +5,6 @@ const isAssesible = (path) => {
     .then(() => true)
     .catch(() => false);
 };
-// const checkAccess = (path)
 
 const createFolderIsNotExist = async (folder) => {
   if (!(await isAssesible(folder))) {
