@@ -1,10 +1,14 @@
 const Users = require("../repositories/users");
 const { HttpCode } = require("../helpers/constants");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs/promises");
+const jimp = require("jimp");
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
 
 const register = async (req, res, next) => {
+  console.log(req.body, "request");
   try {
     const user = await Users.findByEmail(req.body.email);
     if (user) {
@@ -21,6 +25,7 @@ const register = async (req, res, next) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatar: newUser.avatarURL,
       },
     });
   } catch (error) {
@@ -85,9 +90,41 @@ const current = async (req, res, next) => {
   }
 };
 
+const updateAvatar = async (req, res, next) => {
+  const id = req.user._id.toString();
+  const fileName = req.file.originalname.split(".");
+  const ext = fileName[fileName.length - 1];
+  const publicAvatar = path.join(
+    process.env.AVATARS_FOR_PUBLICATION + id + "." + ext
+  );
+  if (!req.user) {
+    return res.status(HttpCode.UNAUTHORIZED).json({
+      message: "Not authorized",
+    });
+  }
+  try {
+    const file = await jimp.read(req.file.path);
+    await file
+      .autocrop()
+      .cover(
+        250,
+        250,
+        jimp.HORIZONTAL_ALIGN_CENTER | jimp.VERTICAL_ALIGN_MIDDLE
+      )
+      .writeAsync(publicAvatar);
+    await fs.unlink(req.file.path);
+    return res.status(HttpCode.OK).json({
+      avatarURL: `/avatars/${id}.${ext}`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   current,
+  updateAvatar,
 };

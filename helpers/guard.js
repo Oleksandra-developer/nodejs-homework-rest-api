@@ -9,13 +9,13 @@ const guard = (req, res, next) => {
     if (headerAuth) {
       token = headerAuth.split(" ")[1];
     }
-    if (error || !user || token !== user.token) {
-      res.status(HttpCode.UNAUTHORIZED).json({
+    if (error || !user || token !== user?.token) {
+      return res.status(HttpCode.UNAUTHORIZED).json({
         message: "Not authorized",
       });
     }
     req.user = user;
-    next();
+    return next();
   })(req, res, next);
 };
 module.exports = guard;
