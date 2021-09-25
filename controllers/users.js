@@ -6,22 +6,26 @@ const fs = require("fs/promises");
 const jimp = require("jimp");
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
+const sendEmail = require("../helpers/sendMail");
 
 const register = async (req, res, next) => {
-  console.log(req.body, "request");
   try {
     const user = await Users.findByEmail(req.body.email);
     if (user) {
-      res.status(HttpCode.CONFLICT).json({
+      return res.status(HttpCode.CONFLICT).json({
         message: "Email in use",
       });
     }
     const newUser = await Users.create(req.body);
-    const id = newUser._id;
-    const payload = { id };
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "1d" });
-    res.status(HttpCode.CREATED).json({
-      token,
+    const verificationToken = res.verificationToken;
+    const email = {
+      to: req.body.email,
+      subject: "Подтверждение",
+      html: `<a href="http://localhost:3000/users/verify/${verificationToken}">Подтвердите регистрацию</a>`,
+    };
+    await sendEmail(email);
+
+    return res.status(HttpCode.CREATED).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
@@ -38,7 +42,7 @@ const login = async (req, res, next) => {
     const user = await Users.findByEmail(req.body.email);
     const isValidPassword = await user?.isValidPassword(req.body.password);
     if (!user || !isValidPassword) {
-      res.status(HttpCode.UNAUTHORIZED).json({
+      return res.status(HttpCode.UNAUTHORIZED).json({
         status: "error",
         code: HttpCode.UNAUTHORIZED,
         ResponseBody: {
@@ -46,7 +50,15 @@ const login = async (req, res, next) => {
         },
       });
     }
-
+    if (!user.verify) {
+      return res.status(HttpCode.BAD_REQUEST).json({
+        status: "error",
+        code: HttpCode.BAD_REQUEST,
+        ResponseBody: {
+          message: "Email is not confirmed",
+        },
+      });
+    }
     const payload = {
       id: user._id,
     };
@@ -121,10 +133,59 @@ const updateAvatar = async (req, res, next) => {
   }
 };
 
+const verify = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await Users.findByVerifyToken(verificationToken);
+    if (!user) {
+      return res.status(HttpCode.NOT_FOUND).json({
+        message: "User not found",
+      });
+    }
+
+    await Users.updateVerifyToken(user._id);
+    return res.status(HttpCode.OK).json({
+      message: "Verification successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const repeated = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res
+        .status(HttpCode.BAD_REQUEST)
+        .json({ message: "missing required field email" });
+    }
+    const user = await Users.findByEmail(email);
+    if (user.verify === true) {
+      return res
+        .status(HttpCode.BAD_REQUEST)
+        .json({ message: "Verification has already been passed" });
+    }
+    if (user.verify === false || email) {
+      const verificationToken = user.verificationToken;
+      const emailData = {
+        to: email,
+        subject: "Повторное подтверждение",
+        html: `<a href="http://localhost:3000/users/verify/${verificationToken}">Подтвердите регистрацию</a>`,
+      };
+      await sendEmail(emailData);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   current,
   updateAvatar,
+  verify,
+  repeated,
 };

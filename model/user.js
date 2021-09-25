@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const SALT_WORK_FACTOR = 8;
 const Subscription = require("../helpers/constants.js");
 const gravatar = require("gravatar");
+const { v4 } = require("uuid");
 
 const userSchema = new Schema({
   password: {
@@ -29,6 +30,14 @@ const userSchema = new Schema({
       return gravatar.url(this.email, { s: "250" }, true);
     },
   },
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verifyToken: {
+    type: String,
+    required: [true, "Verify token is required"],
+  },
 });
 
 userSchema.pre("save", async function (next) {
@@ -41,6 +50,10 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.isValidPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.createVerifyToken = function () {
+  this.verifyToken = v4();
 };
 
 const User = model("user", userSchema);
